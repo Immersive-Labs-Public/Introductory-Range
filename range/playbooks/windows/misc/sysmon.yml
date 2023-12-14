@@ -1,0 +1,40 @@
+- name: Install Sysmon on Windows hosts
+  hosts:
+    - windows
+
+  tasks:
+    - name: Check if Chocolatey is installed
+      ansible.windows.win_stat:
+        path: C:\ProgramData\chocolatey\choco.exe
+      register: choco_stat
+
+    - name: Install Chocolatey
+      ansible.windows.win_powershell:
+        script: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; 
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        creates: C:\ProgramData\chocolatey\choco.exe
+      when: not choco_stat.stat.exists
+
+    - name: Install Sysmon
+      chocolatey.chocolatey.win_chocolatey:
+        name:
+          - sysmon
+
+    - name: Download Sysmon config
+      ansible.windows.win_get_url:
+        # Replace URL with your preferred Sysmon config
+        url: https://raw.githubusercontent.com/olafhartong/sysmon-modular/master/sysmonconfig.xml
+        dest: C:\Windows\System32\config\sysmonconfig.xml #change the path
+
+    - name: Check if Sysmon is already configured
+      ansible.windows.win_command: sysmon64 -c
+      register: sysmon_config
+      changed_when: false
+
+    - name: Configure Sysmon
+      ansible.windows.win_command: sysmon64 -i C:\Windows\System32\config\sysmonconfig.xml -accepteula
+      register: result
+      changed_when: result.rc == 0
+      when: '"C:\Windows\System32\config\sysmonconfig.xml" not in sysmon_config.stdout'

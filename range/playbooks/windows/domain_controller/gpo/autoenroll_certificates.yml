@@ -1,0 +1,31 @@
+---
+- hosts: domain_controller
+  tasks:
+    - name: create a directory to hold the templates
+      win_file:
+        path: C:\setup
+        state: directory
+
+    - name: Copy PowerShell script to remote server
+      win_copy:
+        src: ./scripts/import_autoenroll_certificates.ps1
+        dest: C:\setup\import_autoenroll_certificates.ps1
+
+    - name: Copy backuped GPO to remote server
+      win_copy:
+        src: ./backup_gpo/AutoEnrollCertificates/{5473DD0C-E562-4B74-8733-49AA011FF30E}
+        dest: C:\setup\backup_gpo\
+
+    - name: Execute the PowerShell script to import and link backed-up GPO
+      win_command: powerShell.exe -NonInteractive -File "C:\setup\import_autoenroll_certificates.ps1" -Force
+      register: result
+
+    - name: Display script output
+      debug:
+        var: result.stdout_lines
+
+    - name: Delete C:\Setup directory
+      win_shell: |
+        Remove-Item -Path C:\Setup -Recurse -Force
+      register: delete_setup_result
+      ignore_errors: yes  # Ignore errors if the directory doesn't exist

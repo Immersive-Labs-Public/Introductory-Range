@@ -1,0 +1,27 @@
+- name: Install standard Windows workstation software
+  hosts:
+    - '~win-workstation[0-9]'
+
+  tasks:
+    - name: Check if Chocolatey is installed
+      ansible.windows.win_stat:
+        path: C:\ProgramData\chocolatey\choco.exe
+      register: choco_stat
+
+    - name: Install Chocolatey
+      ansible.windows.win_powershell:
+        script: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; 
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        creates: C:\ProgramData\chocolatey\choco.exe
+      when: not choco_stat.stat.exists
+
+    - name: Install workstation software
+      chocolatey.chocolatey.win_chocolatey:
+        name:
+          - googlechrome
+          - notepadplusplus
+          - thunderbird
+        state: present
+        ignore_checksums: yes

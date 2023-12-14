@@ -1,0 +1,70 @@
+all:
+  children:
+    windows:
+      vars:
+        ansible_user: Administrator
+        ansible_connection: winrm
+        ansible_winrm_transport: credssp
+        ansible_port: 5985
+      
+      hosts:
+        domain_controller:
+          ansible_host: 10.10.0.160
+          ansible_password: ')6%*i4Uzv!Bn?GZ7LM?7I-KT?ac&3IhL'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: dc01
+
+        win-workstation1:
+          ansible_host: 10.10.60.89
+          ansible_password: 'cM*waGBx.9JTGIK=.-IWN6$8G;kK@;=K'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: off-wks01
+
+        win-workstation2:
+          ansible_host: 10.10.60.141
+          ansible_password: '3GwbF*U*X0lUT1Zpg!)N=.pen)-4(G%t'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: off-wks02
+
+        certificate_authority:
+          ansible_host: 10.10.0.25
+          ansible_password: 'x5yVl.icD91Q5F2BvX4731e9sDUiF&Nw'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: ca01
+
+        file_server:
+          ansible_host: 10.10.20.178
+          ansible_password: 'wHakY=BrI8PwJsTfKrIm;FO81&FFAVDj'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: fs01
+
+        wef_server:
+          ansible_host: 10.10.40.238
+          ansible_password: '40TCaJkpbgiu1Pjz7GNB=4Ug5uCgAHRy'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: wef01
+
+    ubuntu:
+      vars:
+        ansible_user: ubuntu
+        ansible_ssh_private_key_file: ssh_private_key.pem
+        ansible_python_interpreter: /usr/bin/python3
+      
+      hosts:
+        lin-workstation1:
+          ansible_host: 10.10.60.70
+          hostname: off-wks03
+
+        ubuntu-test:
+          ansible_host: 10.10.60.247
+          hostname: ubuntu-test
+
+        elastic:
+          ansible_host: 10.10.40.211
+          hostname: elk01

@@ -1,0 +1,16 @@
+- name: Set Windows hostnames
+  hosts:
+    - windows*
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+  tasks:
+    - name: Set hostname
+      ansible.windows.win_hostname:
+        name: "{{ hostname }}"
+      register: result
+
+    - name: Reboot
+      ansible.windows.win_reboot:
+        reboot_timeout: 600
+      when: result.reboot_required

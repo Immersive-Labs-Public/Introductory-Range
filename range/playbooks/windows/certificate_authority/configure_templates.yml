@@ -1,0 +1,69 @@
+- name: Install ADCSTemplate PowerShell module
+  hosts:
+    - certificate_authority
+  gather_facts: no
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+  tasks:
+    - name: Check if ADCSTemplate module is installed
+      win_shell: |
+        Get-Module -Name ADCSTemplate -ListAvailable | Select-Object -First 1 | Out-Null
+      register: module_check
+      ignore_errors: yes  # Ignore errors if the module check fails
+
+    - name: Install ADCSTemplate module if not installed
+      win_shell: |
+        Install-Module -Name ADCSTemplate -Force -Scope AllUsers
+      when: module_check.failed | bool  # Only install if the module is not installed
+
+    - name: Remove downloaded module files
+      win_shell: |
+        Remove-Item -Path C:\Temp\ADCS\* -Force
+      when: module_check.failed | bool  # Only remove files if module check failed
+
+    - name: Display installation result
+      debug:
+        msg: "ADCSTemplate module {% if module_check.failed | bool %}was successfully installed{% else %}is already installed{% endif %}."
+
+    - name: create a directory to hold the templates
+      win_file:
+        path: C:\setup
+        state: directory
+    
+    - name: Copy CA templates in JSON format
+      win_copy:
+        src: "supporting-files/{{ item }}.json"
+        dest: "C:\\setup\\{{ item }}.json"
+      with_items:
+        - "Computer (AD)"
+        - "User (AD)"
+
+    - name: Install Computer CA Templates
+      win_shell: |
+        New-ADCSTemplate -DisplayName "Computer (AD)" -JSON (Get-Content "C:\setup\Computer (AD).json" -Raw) -Publish -Identity "example\domain computers" -AutoEnroll
+      vars:
+        ansible_become: yes
+        ansible_become_method: runas
+        domain_name: "example.corp"
+        ansible_become_user: "example\\m.magdelena"
+        ansible_become_password: "10Ek!d0S[1qX*d[=o^k&"
+
+    - name: Install User CA Templates
+      win_shell: |
+        New-ADCSTemplate -DisplayName "User (AD)" -JSON (Get-Content "C:\setup\User (AD).json" -Raw) -Publish -Identity "example\domain users" -AutoEnroll
+      vars:
+        ansible_become: yes
+        ansible_become_method: runas
+        domain_name: "example.corp"
+        ansible_become_user: "example\\m.magdelena"
+        ansible_become_password: "10Ek!d0S[1qX*d[=o^k&"
+
+    - name: Delete C:\Setup directory
+      win_shell: |
+        Remove-Item -Path C:\Setup -Recurse -Force
+      register: delete_setup_result
+      ignore_errors: yes  # Ignore errors if the directory doesn't exist
+
+    - name: Restart CA server
+      win_reboot:

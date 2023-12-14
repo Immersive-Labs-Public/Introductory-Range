@@ -1,0 +1,24 @@
+---
+- name: Create and Assign Users to Groups
+  hosts: 
+    - domain_controller
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+  tasks:
+    - name: Import users data
+      include_vars:
+        file: ../supporting-files/domain_users.yml
+        name: users_data
+
+    - name: Create users
+      community.windows.win_domain_user:
+        name: "{{ item.1.username }}"
+        firstname: "{{ item.1.first_name }}"
+        surname: "{{ item.1.surname }}"
+        password: "{{ item.1.password }}"
+        path: "{{ item.0.ou_path }},OU=Departments,DC=example,DC=corp"
+        email: "{{ item.1.username }}@example.corp"
+        groups: "{{ item.1.domain_groups }}"
+        password_never_expires: yes
+      loop: "{{ users_data.users | subelements('user_info') }}"

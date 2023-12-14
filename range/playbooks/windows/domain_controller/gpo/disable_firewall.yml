@@ -1,0 +1,28 @@
+---
+- name: Import and Apply Windows Firewall Domain-wide Policy Settings
+  hosts:
+    - domain_controller
+  tasks:
+    - name: create a directory to hold the templates
+      win_file:
+        path: C:\setup
+        state: directory
+
+    - name: Transfer the PowerShell script to domain controller
+      win_copy:
+        src: ./scripts/disable_firewall.ps1
+        dest: C:\setup\firewall_script.ps1
+
+    - name: Execute imported PowerShell script
+      win_command: powershell.exe -ExecutionPolicy ByPass -File C:\setup\firewall_script.ps1
+      register: result
+
+    - name: Display PowerShell output
+      debug:
+        var: result.stdout_lines
+
+    - name: Delete C:\Setup directory
+      win_shell: |
+        Remove-Item -Path C:\Setup -Recurse -Force
+      register: delete_setup_result
+      ignore_errors: yes  # Ignore errors if the directory doesn't exist

@@ -1,0 +1,36 @@
+---
+- name: Manage AD using Ansible
+  hosts:
+    - domain_controller
+  gather_facts: no
+  tasks:
+    - name: Ensure the "WEF" OU exists
+      community.windows.win_domain_ou:
+        name: "WEF"
+        state: present
+      register: ou_result
+
+    - name: Move WEF01 computer to the "WEF" OU
+      community.windows.win_domain_computer:
+        name: "WEF01"
+        dns_hostname: "wef01.example.corp"
+        ou: "OU=WEF,DC=example,DC=corp"
+        state: present
+
+    # New Tasks
+    - name: Ensure the "systems" OU exists
+      community.windows.win_domain_ou:
+        name: "Systems"
+        state: present
+
+    - name: Move specified computers to the "systems" OU
+      community.windows.win_domain_computer:
+        name: "{{ item }}"
+        dns_hostname: "{{ item | lower }}.example.corp"
+        ou: "OU=Systems,DC=example,DC=corp"
+        state: present
+      loop:
+        - CA01
+        - FS01
+        - OFF-WKS01
+        - OFF-WKS02

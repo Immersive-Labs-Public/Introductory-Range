@@ -1,0 +1,75 @@
+---
+- name: Backup GPO and Fetch to localhost
+  hosts: domain_controller
+
+  tasks:
+    - name: Backup GPO to specified location
+      win_shell: |
+        # Import the necessary module
+        Import-Module GroupPolicy
+
+        # Define GPO name and backup location on domain controller
+        $GPOName = "Event-Forwarder-Server"
+        $BackupPath = "C:\\Temp\\GPOBackup"
+
+        # Ensure backup directory exists
+        if (-not (Test-Path $BackupPath)) {
+            New-Item -Path $BackupPath -ItemType Directory
+        }
+
+        # Backup the GPO
+        Backup-GPO -Name $GPOName -Path $BackupPath
+      register: backup_result
+
+    - name: Display Backup Results
+      debug:
+        var: backup_result.stdout_lines
+
+    - name: Find the latest backup folder
+      win_find:
+        paths: "C:\\Temp\\GPOBackup"
+        file_type: directory
+      register: latest_backup
+
+    - name: Debug win_find results
+      debug:
+        var: latest_backup
+
+    - name: Set latest backup path
+      set_fact:
+        gpo_backup_path: "{{ latest_backup.files | sort(attribute='creationtime', reverse=true) | first | json_query('path') }}"
+      when: latest_backup.files | length > 0
+
+    - debug:
+        var: gpo_backup_path
+
+    - name: Archive the GPO backup directory
+      community.windows.win_zip:
+        src: "{{ gpo_backup_path }}"
+        dest: "C:\\Temp\\GPOBackup\\Event-Forwarder-Server-GPO.zip"
+      when: gpo_backup_path is defined
+      register: zip_result
+
+    - name: Fetch GPO backup to localhost
+      fetch:
+        src: "C:\\Temp\\GPOBackup\\Event-Forwarder-Server-GPO.zip"
+        dest: "/home/rabbitbong/Github/team-sim-ranges/ranges/example/range/playbooks/windows/domain_controller/gpo/backup_gpo/"
+        flat: yes
+        delegate_to: localhost
+      when: gpo_backup_path is defined
+
+    # # Optionally, if you want to unzip on your local machine, you can use the `unarchive` module
+    # - name: Unarchive the fetched backup on localhost
+    #   ansible.builtin.unarchive:
+    #     src: "/home/rabbitbong/Github/team-sim-ranges/ranges/example/range/playbooks/windows/domain_controller/gpo/backup_gpo/DefenderPolicySettings_backup.zip"
+    #     dest: "/home/rabbitbong/Github/team-sim-ranges/ranges/example/range/playbooks/windows/domain_controller/gpo/backup_gpo"
+    #     remote_src: no
+    #   delegate_to: localhost
+
+    # - name: Delete the latest_backup.zip after unzipping
+    #   file:
+    #     path: "/home/rabbitbong/Github/team-sim-ranges/ranges/example/playbooks/windows/domain_controller/gpo/backup_gpo/latest_backup.zip"
+    #     state: absent
+    #   delegate_to: localhost
+    #   tags: delete
+ 

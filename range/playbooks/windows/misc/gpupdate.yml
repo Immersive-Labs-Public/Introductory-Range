@@ -1,0 +1,6 @@
+- name: Run gpupdate /force command across all window servers and workstations
+  hosts:
+    - windows*
+  tasks:
+    - name: run gpupdate /force across all window servers and workstations
+      ansible.windows.win_command: gpupdate /force

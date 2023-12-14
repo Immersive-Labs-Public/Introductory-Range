@@ -1,0 +1,21 @@
+- name: Configure file server
+  hosts: 
+    - file_server
+  tasks:
+    - name: Install file server role
+      ansible.windows.win_feature:
+        name: File-Services
+        include_management_tools: true
+
+    - name: Create folder to be shared
+      ansible.windows.win_file:
+        path: 'C:\Shared'
+        state: directory
+
+    - name: Create share
+      ansible.windows.win_share:
+        name: Shared Files
+        path: C:\Shared\
+        list: false
+        full: IT Staff,Administrators
+        read: Authenticated Users
