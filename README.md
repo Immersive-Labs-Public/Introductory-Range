@@ -11,7 +11,11 @@ The use of Ansible will also allow for tweaks and adjustments to be made to the 
 
 ### Example Corp
 
-By following this guide, users will finish with a range consisting of **nine** machines, excluding the range admin machine which is created automatically, the majority of which will be domain joined.  The domain also contains an enterprise certificate server with auto deployment of user and computer certificates enabled, as well as a file server.  A SIEM solution is provided and configured in the form of a server running Elastic and logs from Windows machines are centrally aggregated to a Windows machine using Windows Event Forwarding (WEF), before being shipped to the Elastic server.  This allows for users to swap out to a different SIEM solution with ease by simply swapping out Elastic for another preferred product and using whatever preferred collector is appropriate.  To enhance monitoring capability within the environment, custom event subscriptions are created on the WEF server and Sysmon is deployed with Olaf Hartong's default [modular config](https://github.com/olafhartong/sysmon-modular/blob/master/sysmonconfig.xml)
+By following this guide, users will finish with a range consisting of **nine** machines, excluding the range admin machine which is created automatically, the majority of which will be domain joined.  The domain also contains an enterprise certificate server with auto deployment of user and computer certificates enabled, as well as a file server.
+
+A SIEM solution is provided and configured in the form of a server running Elastic and logs from Windows machines are centrally aggregated to a Windows machine using Windows Event Forwarding (WEF), before being shipped to the Elastic server.  This allows for users to swap out to a different SIEM solution with ease by simply swapping out Elastic for another preferred product and using whatever preferred collector is appropriate.
+
+To enhance monitoring capability within the environment, custom event subscriptions are created on the WEF server and Sysmon is deployed with Olaf Hartong's default [modular config](https://github.com/olafhartong/sysmon-modular/blob/master/sysmonconfig.xml).
 
 During the build, Ansible will be run from an Ubuntu machine inside the range itself which can then be deleted / discarded once the build is completed.
 
@@ -23,4 +27,4 @@ The guides do expect _some_ pre-existing knowledge on the use of Ansible and the
 
 ### Using the Guides
 
-Steps to building the range are provided in chapters in the Github wiki, with the first chapter linked here:  [Chapter-1](../../wiki/Chapter-1)
+Steps to building the range are provided in chapters in the repo wiki, with the first chapter linked here: [Chapter 1](../../wiki/Chapter-1)
