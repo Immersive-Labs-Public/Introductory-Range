@@ -68,3 +68,5 @@ all:
         elastic:
           ansible_host: 10.10.40.211
           hostname: elk01
+
+          
