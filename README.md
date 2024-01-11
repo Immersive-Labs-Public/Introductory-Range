@@ -27,4 +27,4 @@ The guides do expect _some_ pre-existing knowledge on the use of Ansible and the
 
 ### Using the Guides
 
-Steps to building the range are provided in chapters in the repo wiki, with the first chapter linked here: [Chapter 1](../../wiki/Chapter-1)
+Steps to building the range are provided in chapters in the repo wiki, with the first chapter linked here: [Chapter 1](../../wiki/Chapter-1.md)
