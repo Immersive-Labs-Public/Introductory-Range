@@ -4,6 +4,10 @@
   become: yes
 
   tasks:
+    - name: Pause for 2 minute before continuing
+      ansible.builtin.pause:
+        minutes: 2
+        
     - name: Read Elastic password
       become: yes
       become_method: sudo
