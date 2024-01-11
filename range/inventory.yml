@@ -45,7 +45,7 @@ all:
 
         wef_server:
           ansible_host: 10.10.40.238
-          ansible_password: '40TCaJkpbgiu1Pjz7GNB=4Ug5uCgAHRy'
+          ansible_password: 'lZ@VDhx;T0&vs3ZquD6)zcV-7pevDEFf'
           ansible_user: Administrator
           ansible_winrm_transport: credssp
           hostname: wef01
