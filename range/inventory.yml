@@ -10,6 +10,9 @@ all:
       hosts:
         domain_controller:
           ansible_host: 10.10.0.160
+          domain_name: "example.corp"
+          netbios_name: "EXAMPLE"
+          safe_mode_password: "}e5K@Z98rE_W"
           ansible_password: ')6%*i4Uzv!Bn?GZ7LM?7I-KT?ac&3IhL'
           ansible_user: Administrator
           ansible_winrm_transport: credssp

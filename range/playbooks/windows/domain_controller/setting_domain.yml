@@ -2,11 +2,6 @@
 - name: Setup Domain Controller
   hosts: domain_controller
   vars:
-    domain_name: "example.corp"
-    netbios_name: "EXAMPLE"
-    safe_mode_password: "}e5K@Z98rE_W"
-    domain_admin_username: "Administrator"
-    domain_admin_password: ")6%*i4Uzv!Bn?GZ7LM?7I-KT?ac&3IhL"
     ansible_connection: winrm
     ansible_winrm_server_cert_validation: ignore
   tasks:
@@ -22,11 +17,11 @@
 
     - name: Promote server to a Domain Controller
       ansible.windows.win_domain:
-        dns_domain_name: "{{ domain_name }}"
-        domain_netbios_name: "{{ netbios_name }}"
-        safe_mode_password: "{{ safe_mode_password }}"
-        domain_admin_user: "{{ domain_admin_username }}"
-        domain_admin_password: "{{ domain_admin_password }}"
+        dns_domain_name: "{{ hostvars[inventory_hostname]['domain_name'] }}"
+        domain_netbios_name: "{{ hostvars[inventory_hostname]['netbios_name'] }}"
+        safe_mode_password: "{{ hostvars[inventory_hostname]['safe_mode_password'] }}"
+        domain_admin_user: "{{ hostvars[inventory_hostname]['ansible_user'] }}"
+        domain_admin_password: "{{ hostvars[inventory_hostname]['ansible_password'] }}"
         state: domain_controller
         domain_mode: WinThreshold
         forest_mode: WinThreshold
