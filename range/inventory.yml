@@ -9,7 +9,7 @@ all:
       
       hosts:
         domain_controller:
-          ansible_host: 10.10.0.160
+          ansible_host: 10.10.0.10
           domain_name: "example.corp"
           netbios_name: "EXAMPLE"
           safe_mode_password: "}e5K@Z98rE_W"
@@ -19,35 +19,35 @@ all:
           hostname: dc01
 
         win-workstation1:
-          ansible_host: 10.10.60.89
+          ansible_host: 10.10.20.109
           ansible_password: 'cM*waGBx.9JTGIK=.-IWN6$8G;kK@;=K'
           ansible_user: Administrator
           ansible_winrm_transport: credssp
           hostname: off-wks01
 
         win-workstation2:
-          ansible_host: 10.10.60.141
+          ansible_host: 10.10.20.20
           ansible_password: '3GwbF*U*X0lUT1Zpg!)N=.pen)-4(G%t'
           ansible_user: Administrator
           ansible_winrm_transport: credssp
           hostname: off-wks02
 
         certificate_authority:
-          ansible_host: 10.10.0.25
+          ansible_host: 10.10.0.20
           ansible_password: 'x5yVl.icD91Q5F2BvX4731e9sDUiF&Nw'
           ansible_user: Administrator
           ansible_winrm_transport: credssp
           hostname: ca01
 
         file_server:
-          ansible_host: 10.10.20.178
+          ansible_host: 10.10.10.10
           ansible_password: 'wHakY=BrI8PwJsTfKrIm;FO81&FFAVDj'
           ansible_user: Administrator
           ansible_winrm_transport: credssp
           hostname: fs01
 
         wef_server:
-          ansible_host: 10.10.40.238
+          ansible_host: 10.10.30.10
           ansible_password: 'lZ@VDhx;T0&vs3ZquD6)zcV-7pevDEFf'
           ansible_user: Administrator
           ansible_winrm_transport: credssp
@@ -61,15 +61,15 @@ all:
       
       hosts:
         lin-workstation1:
-          ansible_host: 10.10.60.70
+          ansible_host: 10.10.20.30
           hostname: off-wks03
 
         ubuntu-ansible:
-          ansible_host: 10.10.40.157
-          hostname: ansible.ubuntu.test
+          ansible_host: 10.10.40.10
+          hostname: ansible-temp
 
         elastic:
-          ansible_host: 10.10.40.211
+          ansible_host: 10.10.30.201
           hostname: elk01
 
           
