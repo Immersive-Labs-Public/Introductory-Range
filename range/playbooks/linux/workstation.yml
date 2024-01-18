@@ -34,10 +34,6 @@
       changed_when: false
     - debug: var=result_hostname.stdout
 
-    - name: Disable systemd-resolved service
-      service:
-        name: systemd-resolved
-        enabled: no
     - name: Read the current netplan configuration file
       ansible.builtin.slurp:
         src: /etc/netplan/50-cloud-init.yaml
@@ -99,21 +95,6 @@
           network: {config: disabled}
         dest: /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
 
-    # - name: Comment out undesired NTP server entry in chrony conf.d files
-    #   ansible.builtin.lineinfile:
-    #     path: /etc/chrony/conf.d/00-cpc.conf
-    #     regexp: '^\s*server\s+169\.254\.169\.123\b'
-    #     line: '# \g<0>'
-    #     backrefs: yes
-    #   register: chrony_config_update
-
-    # - name: Restart chrony service if changes were made
-    #   ansible.builtin.systemd:
-    #     name: chrony
-    #     state: restarted
-    #     daemon_reload: yes
-    #   when: chrony_config_update is changed
-
     - name: Ensure NTP server is set in chrony config
       lineinfile:
         path: /etc/chrony/chrony.conf
@@ -131,27 +112,6 @@
         replace: '# \1'
         backup: yes
       register: chrony_config_pool_update
-
-    # - name: Stop systemd-resolved service
-    #   service:
-    #     name: systemd-resolved
-    #     state: stopped
-
-    # - name: Check systemd-resolved status
-    #   command: systemctl status systemd-resolved
-    #   register: result_resolved_status
-    #   failed_when: result_resolved_status.rc not in [0, 3]
-    #   changed_when: false
-    #   ignore_errors: true
-    # - debug:
-    #     var: systemd_resolved_status.stdout_lines
-
-    # - name: Update /etc/resolv.conf
-    #   replace:
-    #     path: /etc/resolv.conf
-    #     regexp: 'nameserver 127.0.0.53'
-    #     replace: 'nameserver 10.10.0.160'
-    #   tags: nameserver
 
     - name: Discover AD realm
       command: realm discover example.corp
