@@ -55,10 +55,6 @@
   ansible.builtin.import_playbook: ./windows/certificate_authority/certificate_authority.yml
   tags: certificate_authority
 
-# This may need to be a manual step
-# - name: Set up CA templates
-#   ansible.builtin.import_playbook: ./windows/certificate_authority/configure_templates.yml
-
 - name: Autoenroll certificates
   ansible.builtin.import_playbook: ./windows/domain_controller/gpo/autoenroll_certificates.yml
   tags: autoenroll_certificates
