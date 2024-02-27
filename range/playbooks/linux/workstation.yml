@@ -52,7 +52,7 @@
                 'ethernets': {
                   'ens5': {
                     'nameservers': {
-                      'addresses': ['10.10.0.160']
+                      'addresses': [hostvars['domain_controller']['ansible_host']]
                     }
                   }
                 }
@@ -113,17 +113,32 @@
         backup: yes
       register: chrony_config_pool_update
 
+    - name: Check if instance is joined already to the AD domain
+      command: realm list
+      register: realm_list
+      changed_when: false
+      failed_when: false
+
+    - name: set fact for domain join status
+      set_fact:
+        already_joined: "{{ 'example.corp' in realm_list.stdout }}"
+
     - name: Discover AD realm
       command: realm discover example.corp
       register: realm_discovery
       changed_when: false
+      when: not already_joined
+
     - debug: var=realm_discovery.stdout
+      when: not already_joined
 
     - name: Join the domain
-      shell: |
-        echo {{ password | quote }} | realm join -U Administrator example.corp
-      vars:
-        password: ')6%*i4Uzv!Bn?GZ7LM?7I-KT?ac&3IhL'
+      expect:
+        command: realm join -U Administrator example.corp
+        responses:
+          Password for Administrator:: "{{ hostvars['domain_controller']['ansible_password'] }}"
+      when: not already_joined
+      no_log: true
 
     - name: Backup mkhomedir
       copy:
