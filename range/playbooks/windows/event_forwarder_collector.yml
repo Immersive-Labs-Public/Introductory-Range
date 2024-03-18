@@ -1,0 +1,117 @@
+- name: Generate API Key for winlogbeat
+  hosts: 
+    - elastic
+  become: yes
+
+  tasks:
+    - name: Pause for 2 minute before continuing
+      ansible.builtin.pause:
+        minutes: 2
+        
+    - name: Read Elastic password
+      become: yes
+      become_method: sudo
+      ansible.builtin.slurp:
+        src: /etc/elasticsearch/elastic-usr-pwd.txt
+      register: elastic_password
+
+    - name: Set elastic_password as a fact
+      set_fact:
+        elastic_password: "{{ elastic_password['content'] | b64decode }}"
+
+    - name: Create data view for winlogbeat
+      command: >
+        curl -k -X POST "http://127.0.0.1:5601/api/data_views/data_view" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d'
+        {
+          "data_view": {
+            "title": "winlogbeat*",
+            "name": "winlogbeat"
+          }
+        }' -u elastic:{{ elastic_password }}
+
+    - name: Generate API key for winlogbeat
+      command: >
+        curl -k -X POST "https://127.0.0.1:9200/_security/api_key?pretty" -H 'Content-Type: application/json' -d'
+        {
+          "name": "wef"
+        }' -u elastic:{{ elastic_password }}
+      register: result
+
+    - name: Set API key variables as facts
+      set_fact:
+        api_key_id: "{{ (result.stdout | from_json).id }}"
+        api_key_value: "{{ (result.stdout | from_json).api_key }}"
+        cacheable: yes
+
+- name: Configure WEC server
+  hosts: 
+    - wef_server
+  gather_facts: no
+  tasks:
+
+    - name: Ensure C:\temp directory exists
+      ansible.windows.win_file:
+        path: C:\temp
+        state: directory
+
+    - name: Transfer the XML configuration to the host
+      win_copy:
+        src: ./supporting-files/wef-subscriptions/
+        dest: C:\temp\
+        wildcard: "*.xml"
+
+    - name: Get service status
+      win_service:
+        name: Wecsvc
+      register: wecsvc_service
+
+    - name: Enable wecsvc service
+      win_shell: wecutil qc /q
+      when:
+        - not wecsvc_service.start_mode == "delayed"
+        - not wecsvc_service.state == "running"
+      register: wecsvc_service_started
+
+    - name: Run wecutil with the XML configuration
+      ansible.windows.win_shell: Get-ChildItem -Path C:\temp -Filter *.xml | ForEach-Object {wecutil cs $_.FullName}      
+      
+    - name: Download Winlogbeat
+      win_get_url:
+        url: https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.11.1-windows-x86_64.zip
+        dest: C:\temp\winlogbeat-8.11.1-windows-x86_64.zip
+
+    - name: Unzip Winlogbeat
+      win_unzip:
+        src: C:\temp\winlogbeat-8.11.1-windows-x86_64.zip
+        dest: C:\Program Files\
+        creates: C:\Program Files\winlogbeat-8.11.1-windows-x86_64\
+
+    - name: Install Winlogbeat service
+      win_shell: .\install-service-winlogbeat.ps1
+      args:
+        chdir: C:\Program Files\winlogbeat-8.11.1-windows-x86_64\
+
+    - name: Replace winlogbeat config file
+      win_copy:
+        src: ./supporting-files/winlogbeat.yml
+        dest: C:\Program Files\winlogbeat-8.11.1-windows-x86_64\winlogbeat.yml
+  
+    - name: Update config file with API key
+      win_lineinfile:
+        path: C:\Program Files\winlogbeat-8.11.1-windows-x86_64\winlogbeat.yml
+        regexp: '^\s*api_key:\s*"api_key_id:api_key_value"\s*$'
+        line: "  api_key: \"{{ hostvars['elastic']['api_key_id'] }}:{{ hostvars['elastic']['api_key_value'] }}\""
+        state: present
+
+    - name: Start Winlogbeat service
+      win_service:
+        name: winlogbeat
+        state: started
+
+    - name: Enable Winlogbeat service
+      win_shell: Set-Service -Name winlogbeat -StartupType Automatic
+
+    - name: Install Winlogbeat dashboards
+      win_shell: .\winlogbeat.exe setup dashboards
+      args:
+        chdir: C:\Program Files\winlogbeat-8.11.1-windows-x86_64\

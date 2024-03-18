@@ -1,0 +1,185 @@
+- name: Set up example.corp domain controller
+  hosts:
+    - domain_controller
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+  tasks:
+    - name: Create enterprise admin user
+      microsoft.ad.user:
+        name: m.magdelena
+        firstname: Maria
+        surname: Magdelena
+        password: 10Ek!d0S[1qX*d[=o^k&
+        password_never_expires: yes
+        groups:
+          add:
+          - Enterprise Admins
+          - Domain Admins
+          - Schema Admins
+      tags:
+        - enterprise_admin
+
+    - name: Create base groups OU
+      microsoft.ad.ou:
+        name: Base Groups
+
+    - name: Create base groups
+      microsoft.ad.group:
+        name: "{{ item }}"
+        path: OU=Base Groups,DC=example,DC=corp
+        scope: global
+      loop:
+        - Workstations
+        - Servers
+
+    - name: Create Departments OU
+      microsoft.ad.ou:
+        name: Departments
+
+    - name: Create OU structure
+      microsoft.ad.ou:
+        name: "{{ item.name }}"
+        path: "{{ item.path }},DC=example,DC=corp"
+      loop:
+        - name: Finance
+          path: OU=Departments
+
+        - name: IT
+          path: OU=Departments
+
+        - name: Management
+          path: OU=Departments
+
+        - name: Human Resources
+          path: OU=Departments
+
+        - name: Operations
+          path: OU=Departments
+
+        - name: Computers
+          path: OU=Finance,OU=Departments
+
+        - name: Computers
+          path: OU=IT,OU=Departments
+
+        - name: Computers
+          path: OU=Management,OU=Departments
+
+        - name: Computers
+          path: OU=Human Resources,OU=Departments
+
+        - name: Computers
+          path: OU=Operations,OU=Departments
+
+        - name: Servers
+          path: OU=Computers,OU=Finance,OU=Departments
+
+        - name: Servers
+          path: OU=Computers,OU=IT,OU=Departments
+
+        - name: Servers
+          path: OU=Computers,OU=Management,OU=Departments
+
+        - name: Servers
+          path: OU=Computers,OU=Human Resources,OU=Departments
+
+        - name: Servers
+          path: OU=Computers,OU=Operations,OU=Departments
+
+        - name: Workstations
+          path: OU=Computers,OU=Finance,OU=Departments
+
+        - name: Workstations
+          path: OU=Computers,OU=IT,OU=Departments
+
+        - name: Workstations
+          path: OU=Computers,OU=Management,OU=Departments
+
+        - name: Workstations
+          path: OU=Computers,OU=Human Resources,OU=Departments
+
+        - name: Workstations
+          path: OU=Computers,OU=Operations,OU=Departments
+
+        - name: Users
+          path: OU=Finance,OU=Departments
+
+        - name: Users
+          path: OU=IT,OU=Departments
+
+        - name: Users
+          path: OU=Management,OU=Departments
+
+        - name: Users
+          path: OU=Human Resources,OU=Departments
+
+        - name: Users
+          path: OU=Operations,OU=Departments
+
+        - name: Accounts
+          path: OU=Users,OU=Finance,OU=Departments
+
+        - name: Accounts
+          path: OU=Users,OU=IT,OU=Departments
+
+        - name: Accounts
+          path: OU=Users,OU=Management,OU=Departments
+
+        - name: Accounts
+          path: OU=Users,OU=Human Resources,OU=Departments
+
+        - name: Accounts
+          path: OU=Users,OU=Operations,OU=Departments
+
+        - name: Groups
+          path: OU=Users,OU=Finance,OU=Departments
+
+        - name: Groups
+          path: OU=Users,OU=IT,OU=Departments
+
+        - name: Groups
+          path: OU=Users,OU=Management,OU=Departments
+
+        - name: Groups
+          path: OU=Users,OU=Human Resources,OU=Departments
+
+        - name: Groups
+          path: OU=Users,OU=Operations,OU=Departments
+
+        - name: Services
+          path: OU=Users,OU=Finance,OU=Departments
+
+        - name: Services
+          path: OU=Users,OU=IT,OU=Departments
+
+        - name: Services
+          path: OU=Users,OU=Management,OU=Departments
+
+        - name: Services
+          path: OU=Users,OU=Human Resources,OU=Departments
+
+        - name: Services
+          path: OU=Users,OU=Operations,OU=Departments
+
+    - name: Create groups  
+      microsoft.ad.group:
+        name: "{{ item.name }}"
+        path: "{{ item.path }},OU=Departments,DC=example,DC=corp"
+        scope: global
+      loop:
+        - name: HR Staff
+          path: OU=Groups,OU=Users,OU=Human Resources
+
+        - name: Finance Staff
+          path: OU=Groups,OU=Users,OU=Finance
+
+        - name: Operations Staff
+          path: OU=Groups,OU=Users,OU=Operations
+
+        - name: Mgmnt Staff
+          path: OU=Groups,OU=Users,OU=Management
+
+        - name: IT Staff
+          path: OU=Groups,OU=Users,OU=IT      
+

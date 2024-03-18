@@ -1,0 +1,49 @@
+---
+- hosts: domain_controller
+  tasks:
+    - name: create a directory to hold the templates
+      win_file:
+        path: C:\setup
+        state: directory
+  
+    - name: Copy PowerShell script to remote server
+      win_copy:
+        src: ./scripts/import_event_forwarder_server_gpo.ps1
+        dest: C:\setup\import_event_forwarder_server_gpo.ps1
+
+    - name: Copy backuped GPO to remote server
+      win_copy:
+        src: ./backup_gpo/WEF_WEC/WEF-Server/{E11908A4-2215-43D1-9923-9184DC33EE28}
+        dest: C:\setup\backup_gpo\
+
+    - name: Execute the PowerShell script to import and link backed-up GPO
+      win_command: powershell.exe -ExecutionPolicy Bypass -File C:\setup\import_event_forwarder_server_gpo.ps1
+      register: result
+
+    - name: Display script output
+      debug:
+        var: result.stdout_lines
+    
+    - name: Copy Powershell script to remote server
+      win_copy:
+        src: ./scripts/import_event_forwarder_client_gpo.ps1
+        dest: C:\setup\import_event_forwarder_client_gpo.ps1
+    
+    - name: Copy backup of GPO to remote server
+      win_copy:
+        src: ./backup_gpo/WEF_WEC/WEF-Client/{44213AD0-564B-4ED1-8C27-9422D7977CF4}
+        dest: C:\setup\backup_gpo\
+
+    - name: Execute the PowerShell script to import and link backed-up GPO
+      win_command: powershell.exe -ExecutionPolicy Bypass -File C:\setup\import_event_forwarder_client_gpo.ps1
+      register: result
+
+    - name: Display script output
+      debug:
+        var: result.stdout_lines
+
+    - name: Delete C:\Setup directory
+      win_shell: |
+        Remove-Item -Path C:\Setup -Recurse -Force
+      register: delete_setup_result
+      ignore_errors: yes  # Ignore errors if the directory doesn't exist

@@ -1,0 +1,39 @@
+- name: Manage AD using Ansible
+  hosts: domain_controller
+  gather_facts: no
+  tasks:
+    - name: Ensure the "WEF" OU exists
+      microsoft.ad.ou:
+        name: "WEF"
+        state: present
+      
+    # Task to explicitly move the computer if it already exists
+    - name: Move WEF01 computer to the "WEF" OU if it exists
+      win_shell: |
+        Import-Module ActiveDirectory
+        $comp = Get-ADComputer -Identity WEF01 -ErrorAction SilentlyContinue
+        if ($comp) {
+          Move-ADObject -Identity $comp.DistinguishedName -TargetPath "OU=WEF,DC=example,DC=corp"
+        }
+      ignore_errors: yes
+
+    - name: Ensure the "systems" OU exists
+      microsoft.ad.ou:
+        name: "Systems"
+        state: present
+
+    - name: Move specified computers to the "systems" OU using PowerShell
+      win_shell: |
+        Import-Module ActiveDirectory
+        $compName = "{{ item }}"
+        $comp = Get-ADComputer -Identity $compName -ErrorAction SilentlyContinue
+        if ($comp) {
+          Move-ADObject -Identity $comp.DistinguishedName -TargetPath "OU=Systems,DC=example,DC=corp"
+        }
+      loop:
+        - CA01
+        - FS01
+        - OFF-WKS01
+        - OFF-WKS02
+      ignore_errors: yes
+

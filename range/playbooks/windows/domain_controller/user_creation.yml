@@ -1,0 +1,38 @@
+---
+- name: Create and Assign Users to Groups
+  hosts: domain_controller
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+  tasks:
+    - name: Configure users data
+      block:
+        - name: load user data
+          include_vars:
+            file: ../supporting-files/domain_users.yml
+            name: users_data
+
+        - name: Check if user already exists
+          win_shell: |
+            $user = Get-ADUser -Filter "SamAccountName -eq '{{ item.1.username }}'" -ErrorAction SilentlyContinue
+            if ($user -ne $null) { Write-Output "exists" } else { Write-Output "notexists" }
+          register: user_check
+          loop: "{{ lookup('subelements', users_data.users, 'user_info') }}"
+
+        - name: Create users if they do not exist
+          microsoft.ad.user:
+            name: "{{ item.item.1.username }}"
+            firstname: "{{ item.item.1.first_name }}"
+            surname: "{{ item.item.1.surname }}"
+            password: "{{ item.item.1.password }}"
+            path: "{{ item.item.0.ou_path }},OU=Departments,DC=example,DC=corp"
+            email: "{{ item.item.1.username }}@example.corp"
+            groups:
+              add: "{{ item.item.1.domain_groups }}"
+            password_never_expires: yes
+          when: "'notexists' in item.stdout | trim"
+          loop: "{{ user_check.results }}"
+
+
+
+

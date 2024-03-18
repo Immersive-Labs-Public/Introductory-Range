@@ -1,0 +1,52 @@
+---
+- name: Backup GPO and Fetch to localhost
+  hosts: domain_controller
+
+  tasks:
+    - name: Backup GPO to specified location
+      win_shell: |
+        # Import the necessary module
+        Import-Module GroupPolicy
+
+        # Define GPO name and backup location on domain controller
+        $GPOName = "Event-Forwarder-Server"
+        $BackupPath = "C:\\Temp\\GPOBackup"
+
+        # Ensure backup directory exists
+        if (-not (Test-Path $BackupPath)) {
+            New-Item -Path $BackupPath -ItemType Directory
+        }
+
+        # Backup the GPO
+        Backup-GPO -Name $GPOName -Path $BackupPath
+      register: backup_result
+
+    - name: Display Backup Results
+      debug:
+        var: backup_result.stdout_lines
+
+    - name: Find the latest backup folder
+      win_find:
+        paths: "C:\\Temp\\GPOBackup"
+        file_type: directory
+      register: latest_backup
+
+    - name: Debug win_find results
+      debug:
+        var: latest_backup
+
+    - name: Set latest backup path
+      set_fact:
+        gpo_backup_path: "{{ latest_backup.files | sort(attribute='creationtime', reverse=true) | first | json_query('path') }}"
+      when: latest_backup.files | length > 0
+
+    - debug:
+        var: gpo_backup_path
+
+    - name: Archive the GPO backup directory
+      community.windows.win_zip:
+        src: "{{ gpo_backup_path }}"
+        dest: "C:\\Temp\\GPOBackup\\Event-Forwarder-Server-GPO.zip"
+      when: gpo_backup_path is defined
+      register: zip_result
+ 

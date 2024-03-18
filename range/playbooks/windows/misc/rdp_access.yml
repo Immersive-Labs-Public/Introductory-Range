@@ -1,0 +1,20 @@
+- name: Enable RDP Access for low privilege users on workstations
+  hosts:
+    - 'win-workstation*'
+  tasks:
+    - name: Allow RDP access
+      ansible.windows.win_powershell:
+        script: |
+          net localgroup "Remote Desktop Users" /add "example\HR Staff"
+          net localgroup "Remote Desktop Users" /add "example\Finance Staff"
+          net localgroup "Remote Desktop Users" /add "example\Operations Staff"
+          net localgroup "Remote Desktop Users" /add "example\Mgmnt Staff"
+
+- name: Enable IT Staff on all Windows machines (except for the domain controller)
+  hosts:
+    - 'windows*:!domain_controller'
+  tasks:
+    - name: Allow RDP access
+      ansible.windows.win_powershell:
+        script: |
+          net localgroup "Remote Desktop Users" /add "example\IT Staff"

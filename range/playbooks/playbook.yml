@@ -1,0 +1,85 @@
+- name: Set local administrator credentials to not expire
+  ansible.builtin.import_playbook: ./windows/misc/disable_local_administrator_password_expiry.yml
+  tags: disable_local_administrator_password_expiry
+
+- name: Set Windows hostnames
+  ansible.builtin.import_playbook: ./windows/misc/hostnames.yml
+  tags: hostnames
+
+- name: Set up domain controller
+  ansible.builtin.import_playbook: ./windows/domain_controller/setting_domain.yml
+  tags: domain_controller
+
+- name: Create OUs and groups
+  ansible.builtin.import_playbook: ./windows/domain_controller/ou_and_groups.yml
+  tags: ou_and_groups
+
+- name: Create users
+  ansible.builtin.import_playbook: ./windows/domain_controller/user_creation.yml
+  tags: user_creation
+
+- name: Join Windows machines to domain
+  ansible.builtin.import_playbook: ./windows/misc/domain_join.yml
+  ignore_errors: no
+  tags: domain_join
+
+- name: Create and manage WEF OU
+  ansible.builtin.import_playbook: ./windows/misc/wef_ou.yml
+  tags: wef_ou
+
+- name: Join Linux machine to domain and configure workstation
+  ansible.builtin.import_playbook: ./linux/workstation.yml
+  tags: linux_workstation
+
+- name: Disable Windows firewall
+  ansible.builtin.import_playbook: ./windows/domain_controller/gpo/disable_firewall.yml
+  tags: disable_firewall
+
+- name: Disable antivirus
+  ansible.builtin.import_playbook: ./windows/domain_controller/gpo/disable_av.yml
+  tags: disable_av
+
+- name: Disable refuse machine account password
+  ansible.builtin.import_playbook: ./windows/domain_controller/gpo/disable_refuse_machine_account_password.yml
+  tags: disable_refuse_machine_account_password
+
+- name: Configure Event forwarder GPO
+  ansible.builtin.import_playbook: ./windows/domain_controller/gpo/event_forwarder.yml
+  tags: event_forwarder
+
+- name: Enable RDP access
+  ansible.builtin.import_playbook: ./windows/misc/rdp_access.yml
+  tags: rdp_access
+
+- name: Set up certificate authority
+  ansible.builtin.import_playbook: ./windows/certificate_authority/certificate_authority.yml
+  tags: certificate_authority
+
+- name: Autoenroll certificates
+  ansible.builtin.import_playbook: ./windows/domain_controller/gpo/autoenroll_certificates.yml
+  tags: autoenroll_certificates
+
+- name: Set up file server
+  ansible.builtin.import_playbook: ./windows/fileserver.yml
+  tags: fileserver
+
+- name: Set up Windows workstations
+  ansible.builtin.import_playbook: ./windows/workstation.yml
+  tags: win_workstation
+
+- name: Install and configure Sysmon
+  ansible.builtin.import_playbook: ./windows/misc/sysmon.yml
+  tags: sysmon
+
+- name: Install and configure Elastic
+  ansible.builtin.import_playbook: ./linux/elastic.yml
+  tags: elastic
+
+- name: Configure WEF server
+  ansible.builtin.import_playbook: ./windows/event_forwarder_collector.yml
+  tags: WEF
+
+- name: run gpupdate /force across all window servers and workstations
+  ansible.builtin.import_playbook: ./windows/misc/gpupdate.yml
+  tags: gpupdate
+

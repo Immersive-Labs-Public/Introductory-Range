@@ -1,0 +1,172 @@
+
+---
+users:
+  - group: HR Staff
+    ou_path: OU=Accounts,OU=Users,OU=Human Resources
+    user_info:
+      - first_name: Avery
+        surname: Blake
+        username: a.blake
+        password: 7=ABO{j17$=D
+        domain_groups:
+          - HR Staff
+      - first_name: Serenity
+        surname: Daugherty
+        username: s.daugherty
+        password: d<Gw(OZW943K
+        domain_groups:
+          - HR Staff
+      - first_name: Ali
+        surname: Chang
+        username: a.chang
+        password: I,!:p9Q7;4od
+        domain_groups:
+          - HR Staff
+      - first_name: Amina
+        surname: Allison
+        username: a.allison
+        password: rg_vBH0:44m*
+        domain_groups:
+          - HR Staff
+      - first_name: Kieran
+        surname: Mccormick
+        username: k.mccormick
+        password: 7q^q~p2/8o\E
+        domain_groups:
+          - HR Staff
+
+  - group: IT Staff
+    ou_path: OU=Accounts,OU=Users,OU=IT
+    user_info:
+      - first_name: Eden
+        surname: Castaneda
+        username: e.castaneda
+        password: x61492D&m0]~
+        domain_groups:
+          - IT Staff
+      - first_name: Alejandro
+        surname: Vaughan
+        username: a.vaughan
+        password: u+2{77{A"*v6
+        domain_groups:
+          - IT Staff
+      - first_name: Lukas
+        surname: Velasquez
+        username: l.velasquez
+        password: =W9r@h497Cq(
+        domain_groups:
+          - IT Staff
+      - first_name: Alissa
+        surname: Quinn
+        username: a.quinn
+        password: FwS.o85}Z9!8
+        domain_groups:
+          - IT Staff
+      - first_name: Jeffery 
+        surname: Mcdowell
+        username: j.mcdowell
+        password: (e9h,27&GS7{
+        domain_groups:
+          - IT Staff
+
+  - group: Finance Staff
+    ou_path: OU=Accounts,OU=Users,OU=Finance
+    user_info:
+      - first_name: Mikaela
+        surname: Fleming
+        username: m.fleming
+        password: ._>70D9`cs4I
+        domain_groups:
+          - Finance Staff
+      - first_name: Kaitlyn
+        surname: Mccall
+        username: k.mccall
+        password: 76yY$Wu2MC8b
+        domain_groups:
+          - Finance Staff
+      - first_name: Kieran
+        surname: Lloyd
+        username: k.lloyd
+        password: 38'*o#OJ/T/2
+        domain_groups:
+          - Finance Staff
+      - first_name: Tom
+        surname: Pacheco
+        username: t.pacheco
+        password: a/g1-9'68IXM
+        domain_groups:
+          - Finance Staff
+      - first_name: Timothy
+        surname: Leach
+        username: t.leach
+        password: 4Ab[a2:6fC`+
+        domain_groups:
+          - Finance Staff
+
+  - group: Operations Staff
+    ou_path: OU=Accounts,OU=Users,OU=Operations
+    user_info:
+      - first_name: Mateo
+        surname: Mccarty
+        username: m.mccarty
+        password: 4]5UDu_2ns:F
+        domain_groups:
+          - Operations Staff
+      - first_name: Bryan
+        surname: Mason
+        username: b.mason
+        password: n5cfl193R1A1
+        domain_groups:
+          - Operations Staff
+      - first_name: Leonardo
+        surname: Brady
+        username: l.brady
+        password: 160ZgK5nsr87
+        domain_groups:
+          - Operations Staff
+      - first_name: Reagan
+        surname: Velazquez
+        username: r.velazquez
+        password: oEY3YhP8dph5
+        domain_groups:
+          - Operations Staff
+      - first_name: Kaela
+        surname: Tanya
+        username: k.tanya
+        password: DMHtZ8h8h1xw
+        domain_groups:
+          - Operations Staff
+
+  - group: Mgmnt Staff
+    ou_path: OU=Accounts,OU=Users,OU=Management
+    user_info:
+      - first_name: Milton 
+        surname: Rivera
+        username: m.rivera
+        password: hjSKVj0793w2
+        domain_groups:
+          - Mgmnt Staff
+      - first_name: Irvin
+        surname: Holland
+        username: i.holland
+        password: j0YY728sTw8A
+        domain_groups:
+          - Mgmnt Staff
+      - first_name: Myla
+        surname: Sosa
+        username: m.sosa
+        password: UxzS7Ir60mJO
+        domain_groups:
+          - Mgmnt Staff
+      - first_name: Kamari
+        surname: Johnson
+        username: k.johnson
+        password: 6lzz0TCC3CgH
+        domain_groups:
+          - Mgmnt Staff
+      - first_name: Lacey
+        surname: Potter
+        username: l.potter
+        password: t61w42Gf5snK
+        domain_groups:
+          - Mgmnt Staff

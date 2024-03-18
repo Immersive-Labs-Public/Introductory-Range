@@ -1,0 +1,14 @@
+- name: Run gpupdate /force command across all window servers and workstations
+  hosts:
+    - windows*
+  tasks:
+    - name: run gpupdate /force across all window servers and workstations
+      ansible.windows.win_command: gpupdate /force
+      register: gpupdate_result
+  
+    - name: Reboot all windows system gracefully
+      ansible.windows.win_reboot:
+        msg: "Reboot after successful gpupdate"
+        pre_reboot_delay: 30
+        post_reboot_delay: 60
+      when: gpupdate_result.rc == 0

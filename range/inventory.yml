@@ -1,0 +1,75 @@
+all:
+  children:
+    windows:
+      vars:
+        ansible_user: Administrator
+        ansible_connection: winrm
+        ansible_winrm_transport: credssp
+        ansible_port: 5985
+      
+      hosts:
+        domain_controller:
+          ansible_host: 10.10.0.10
+          domain_name: "example.corp"
+          netbios_name: "EXAMPLE"
+          safe_mode_password: "}e5K@Z98rE_W"
+          ansible_password: 'wv)oO6uTQ2x*3lrgNt4$R7taJl1sFtZL'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: dc01
+
+        win-workstation1:
+          ansible_host: 10.10.20.10
+          ansible_password: 'cj7Z!zki!)Y!X7!=koF5xvqpv%Usn1Ld'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: off-wks01
+
+        win-workstation2:
+          ansible_host: 10.10.20.20
+          ansible_password: '&ZtDkz%b&SOjTeJ7UI@kw*iH*dnvqJrW'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: off-wks02
+
+        certificate_authority:
+          ansible_host: 10.10.0.20
+          ansible_password: 'D*Ngl98O8=Hm1VO0xp@X=bH2Q!=TU9xf'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: ca01
+
+        file_server:
+          ansible_host: 10.10.10.10
+          ansible_password: 'x=S;n)OCgUM3l?nFUl=b3==.avBwEIHK'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: fs01
+
+        wef_server:
+          ansible_host: 10.10.30.10
+          ansible_password: '6@x4y.n$DtrSYW08wun8TEXaLJGknlNp'
+          ansible_user: Administrator
+          ansible_winrm_transport: credssp
+          hostname: wef01
+
+    ubuntu:
+      vars:
+        ansible_user: ubuntu
+        ansible_ssh_private_key_file: ssh_private_key.pem
+        ansible_python_interpreter: /usr/bin/python3
+      
+      hosts:
+        lin-workstation1:
+          ansible_host: 10.10.20.30
+          hostname: off-wks03
+
+        ubuntu-ansible:
+          ansible_host: 10.10.40.10
+          hostname: ansible-temp
+
+        elastic:
+          ansible_host: 10.10.30.20
+          hostname: elk01
+
+          

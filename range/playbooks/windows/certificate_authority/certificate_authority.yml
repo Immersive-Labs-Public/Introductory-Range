@@ -1,0 +1,62 @@
+- name: Setup CA on CA01.example.corp
+  hosts:
+    - certificate_authority
+  gather_facts: yes
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+  tasks:
+    - name: Install ADCS
+      win_feature:
+        name: AD-Certificate
+        state: present
+        include_sub_features: yes
+        include_management_tools: yes
+      register: win_feature
+
+    - name: Install-WindowsFeature ADCS-Cert-Authority
+      ansible.windows.win_feature:
+        name: ADCS-Cert-Authority
+        state: present
+        include_management_tools: yes
+
+    - name: Install-WindowsFeature ADCS-Web-Enrollment
+      ansible.windows.win_feature:
+        name: ADCS-Web-Enrollment
+        state: present
+
+    - name: Install Root CA with a 10-year validity period
+      win_shell: |
+        Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -CACommonName "root CA01" -KeyLength 2048 -HashAlgorithm SHA256 -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" -ValidityPeriod Years -ValidityPeriodUnits 10 -Force
+      vars:
+        ansible_user: example.corp\m.magdelena
+        ansible_password: 10Ek!d0S[1qX*d[=o^k&
+      become: yes
+      become_user: example.corp\m.magdelena
+
+    - name: Enable Web enrollement
+      ansible.windows.win_powershell:
+        script: |
+          [CmdletBinding()]
+          param ()
+          try {
+            Install-AdcsWebEnrollment -Force
+            $Ansible.Changed = $true
+          } catch {
+            $Ansible.Changed = $false
+          }
+
+    - name: Start Certificate Services
+      win_service:
+        name: CertSvc
+        state: started
+        start_mode: auto
+      tags:
+        - start_ca
+
+    - name: Manual configuration required
+      ansible.builtin.pause:
+        prompt: "Manual configuration required. See docs/ca.md for manual configurations of auto-enroll templates. Once manual configuration is completed successfully, press any key to continue."        
+
+    - name: Reboot after ADCS installation
+      ansible.windows.win_reboot:

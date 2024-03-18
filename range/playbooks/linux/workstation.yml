@@ -1,0 +1,191 @@
+---
+- name: Domain Join Ubuntu Server to AD
+  hosts: 
+    - lin-workstation1
+  become: yes
+  tasks:
+
+    - name: update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Install necessary packages
+      apt:
+        name:
+          - chrony
+          - realmd
+          - libnss-sss
+          - libpam-sss
+          - sssd
+          - sssd-tools
+          - adcli
+          - samba-common-bin
+          - oddjob
+          - oddjob-mkhomedir
+          - packagekit
+        state: present
+
+    - name: Set hostname
+      command: hostnamectl set-hostname off-wks03.example.corp
+
+    - name: Verify the hostname
+      command: hostname
+      register: result_hostname
+      changed_when: false
+    - debug: var=result_hostname.stdout
+
+    - name: Read the current netplan configuration file
+      ansible.builtin.slurp:
+        src: /etc/netplan/50-cloud-init.yaml
+      register: netcfg
+
+    - name: Decode netplan configuration content
+      set_fact:
+        netplan_conf: "{{ (netcfg['content'] | b64decode) | from_yaml }}"
+
+    - name: Add the DC's IP as DNS to the netplan configuration
+      set_fact:
+        netplan_conf: >-
+          {{
+            netplan_conf | combine({
+              'network': {
+                'ethernets': {
+                  'ens5': {
+                    'nameservers': {
+                      'addresses': [hostvars['domain_controller']['ansible_host']]
+                    }
+                  }
+                }
+              }
+            }, recursive=True)
+          }}
+
+    - name: Write the updated netplan configuration to a temporary file
+      ansible.builtin.copy:
+        content: |
+          # This file describes the network interfaces available on your system
+          # For more information, see netplan(5).
+          {{ netplan_conf | to_nice_yaml }}
+        dest: /tmp/01-netcfg.yaml
+      register: temp_netplan
+
+    - name: Validate the temporary netplan configuration
+      ansible.builtin.command:
+        cmd: bash -c 'echo | netplan try --config-file /tmp/01-netcfg.yaml'
+      register: validation_result
+      failed_when: validation_result.rc != 0
+      ignore_errors: true
+
+    - name: Copy the validated netplan configuration to the correct location
+      ansible.builtin.copy:
+        src: /tmp/01-netcfg.yaml
+        dest: /etc/netplan/50-cloud-init.yaml
+        remote_src: true
+      when: validation_result.rc == 0
+
+    - name: Apply the netplan configuration
+      ansible.builtin.command:
+        cmd: netplan apply
+      when: validation_result.rc == 0
+
+    - name: Disable cloud-init network configuration
+      ansible.builtin.copy:
+        content: |
+          # To disable cloud-init's network configuration capabilities
+          network: {config: disabled}
+        dest: /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+
+    - name: Ensure NTP server is set in chrony config
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: '^server dc-1\.example\.corp'
+        line: 'server dc01.example.corp iburst'
+        state: present
+      notify:
+        - restart chrony
+      tags: chrony
+
+    - name: Comment out all 'pool' lines in chrony.conf
+      ansible.builtin.replace:
+        path: /etc/chrony/chrony.conf
+        regexp: '^(pool .*)$'
+        replace: '# \1'
+        backup: yes
+      register: chrony_config_pool_update
+
+    - name: Check if instance is joined already to the AD domain
+      command: realm list
+      register: realm_list
+      changed_when: false
+      failed_when: false
+
+    - name: set fact for domain join status
+      set_fact:
+        already_joined: "{{ 'example.corp' in realm_list.stdout }}"
+
+    - name: Discover AD realm
+      command: realm discover example.corp
+      register: realm_discovery
+      changed_when: false
+      when: not already_joined
+
+    - debug: var=realm_discovery.stdout
+      when: not already_joined
+
+    - name: Join the domain
+      expect:
+        command: realm join -U Administrator example.corp
+        responses:
+          Password for Administrator:: "{{ hostvars['domain_controller']['ansible_password'] }}"
+      when: not already_joined
+      no_log: true
+
+    - name: Backup mkhomedir
+      copy:
+        src: /usr/share/pam-configs/mkhomedir
+        dest: /usr/share/pam-configs/mkhomedir.bak
+
+    - name: Update /usr/share/pam-configs/mkhomedir
+      copy:
+        content: |
+          Name: Create home directory on login
+          Default: yes
+          Priority: 900
+          Session-Type: Additional
+          Session:
+          optional pam_mkhomedir.so
+        dest: /usr/share/pam-configs/mkhomedir
+
+    - name: Pre-define PAM selections
+      ansible.builtin.debconf:
+        name: libpam-runtime
+        question: libpam-runtime/profiles
+        vtype: string
+        value: "pwquality,unix,sss,systemd,inheritable,create_home_on_login"
+
+    - name: Update PAM authentication
+      ansible.builtin.command:
+        _raw_params: pam-auth-update --package 
+
+    - name: Restart sssd
+      service:
+        name: sssd
+        state: restarted
+
+    - name: Check sssd status
+      command: systemctl status sssd
+      register: result_sssd
+      changed_when: false
+    - debug: var=result_sssd.stdout
+
+    - name: Allow Domain Admins to have root privileges
+      copy:
+        content: '%domain\ admins@example.corp    ALL=(ALL)    ALL'
+        dest: /etc/sudoers.d/domain-admins
+
+  handlers:
+    - name: restart chrony
+      service:
+        name: chrony
+        state: restarted
+      tags: chrony_restart
