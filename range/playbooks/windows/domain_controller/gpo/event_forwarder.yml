@@ -13,7 +13,7 @@
 
     - name: Copy backuped GPO to remote server
       win_copy:
-        src: ./backup_gpo/WEF_WEC/WEF-Server/{E11908A4-2215-43D1-9923-9184DC33EE28}
+        src: ./backup_gpo/WEF_WEC/WEF-Server/{E34D36BE-9B45-4F8A-8B8F-EC6E0DF5CF0D}
         dest: C:\setup\backup_gpo\
 
     - name: Execute the PowerShell script to import and link backed-up GPO
@@ -31,7 +31,7 @@
     
     - name: Copy backup of GPO to remote server
       win_copy:
-        src: ./backup_gpo/WEF_WEC/WEF-Client/{44213AD0-564B-4ED1-8C27-9422D7977CF4}
+        src: ./backup_gpo/WEF_WEC/WEF-Client/{EEE3C0A9-02B7-443B-BA10-B86B687A1B44}
         dest: C:\setup\backup_gpo\
 
     - name: Execute the PowerShell script to import and link backed-up GPO

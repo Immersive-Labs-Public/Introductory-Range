@@ -2,7 +2,7 @@ $backupPath = 'C:\setup\backup_gpo\'
 $GPOName = "EventForwarderServer"
 
 # Import the backed-up GPO
-Import-GPO -BackupID E11908A4-2215-43D1-9923-9184DC33EE28 -Path $backupPath -TargetName $GPOName -CreateIfNeeded
+Import-GPO -BackupID E34D36BE-9B45-4F8A-8B8F-EC6E0DF5CF0D -Path $backupPath -TargetName $GPOName -CreateIfNeeded
 
 # Link the imported GPO to the "WEF" OU
 $ouDn = "OU=WEF," + (Get-ADDomain).DistinguishedName
